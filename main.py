@@ -8,24 +8,36 @@ holding a door open for someone who is still far too far away.
 """
 
 import os
-import sys
 
 TITLE = "Director of Holding the Door for People Too Far Away"
 
+# Caps the entry must satisfy: the bounty allows 60 characters at most,
+# and the sealed gate accepts 1 to 180 characters of UTF-8 text.
+MAX_TITLE_CHARS = 60
+MIN_GATE_CHARS = 1
+MAX_GATE_CHARS = 180
+
+
+def validate(title: str) -> str:
+    """Return the title unchanged, or raise if it breaks a cap."""
+    chars = len(title)
+    if chars > MAX_TITLE_CHARS:
+        raise ValueError(f"title is {chars} characters, over the {MAX_TITLE_CHARS} limit")
+    if not MIN_GATE_CHARS <= chars <= MAX_GATE_CHARS:
+        raise ValueError(f"title is {chars} characters, outside the gate 1-180")
+    if title != title.strip():
+        raise ValueError("title has leading or trailing whitespace")
+    return title
+
 
 def main() -> int:
-    if len(TITLE) > 60:
-        print(f"title is {len(TITLE)} characters, over the 60 limit", file=sys.stderr)
-        return 1
-    if not TITLE.strip():
-        print("title is empty", file=sys.stderr)
-        return 1
+    title = validate(TITLE)
     out_dir = os.environ.get("OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8") as fh:
-        fh.write(TITLE)
-    print(f"wrote {len(TITLE)} characters to {path}")
+        fh.write(title)
+    print(f"wrote {len(title)} characters to {path}")
     return 0
 
 
